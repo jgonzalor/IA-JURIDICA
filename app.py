@@ -79,7 +79,7 @@ textarea {font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFo
   background: radial-gradient(circle at center, rgba(15,23,42,.78), rgba(2,6,23,.92));
   backdrop-filter: blur(8px);
   pointer-events: none;
-  animation: sentinelOverlayFade 1.65s ease-in-out forwards;
+  animation: sentinelOverlayFade 7s ease-in-out forwards;
 }
 .sentinel-loader-card {
   min-width: 290px;
