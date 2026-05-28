@@ -69,6 +69,7 @@ CSS = """
 }
 .result-score {float:right; opacity: .55; font-size: .8rem;}
 textarea {font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI";}
+
 .sentinel-nav-overlay {
   position: fixed;
   inset: 0;
@@ -134,6 +135,7 @@ textarea {font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFo
 }
 .sentinel-click-pop img {width: 100%; border-radius: 20px; display:block;}
 .sentinel-click-text {font-size:.83rem; font-weight:800; margin-top:.35rem; color:#0f172a;}
+
 @keyframes sentinelOverlayFade {
   0% {opacity:0; transform: scale(1.02);}
   12% {opacity:1; transform: scale(1);}
@@ -169,7 +171,6 @@ SHOW_ACTION_STICKER_EVERY_CLICK = True
 
 @st.cache_data(show_spinner=False)
 def asset_data_uri(filename: str, mime: str) -> str:
-    """Carga un asset local como data URI para poder usarlo dentro de HTML/CSS."""
     path = ASSET_DIR / filename
     if not path.exists():
         return ""
@@ -178,10 +179,10 @@ def asset_data_uri(filename: str, mime: str) -> str:
 
 
 def show_navigation_overlay(module_name: str):
-    """Animación breve al cargar la app o cambiar de módulo."""
     head_gif = asset_data_uri("sentinel_head_turn.gif", "image/gif")
     if not head_gif:
         return
+
     st.markdown(
         f'''
         <div class="sentinel-nav-overlay">
@@ -198,12 +199,13 @@ def show_navigation_overlay(module_name: str):
 
 
 def show_action_sticker(message: str = "Procesando solicitud..."):
-    """Sticker emergente para acciones de análisis/generación."""
     if not SHOW_ACTION_STICKER_EVERY_CLICK and random.random() > 0.45:
         return
+
     sticker = asset_data_uri("sentinel_click_sticker.png", "image/png")
     if not sticker:
         return
+
     placeholder = st.empty()
     placeholder.markdown(
         f'''
@@ -284,15 +286,19 @@ def crime_card(delito):
         """,
         unsafe_allow_html=True,
     )
+
     c1, c2 = st.columns(2)
+
     with c1:
         st.markdown("**Elementos a revisar**")
         for x in delito["elementos"]:
             st.markdown(f"- {x}")
+
     with c2:
         st.markdown("**Datos útiles / evidencia**")
         for x in delito["datos_utiles"]:
             st.markdown(f"- {x}")
+
     if delito.get("alertas"):
         st.markdown("**Alertas**")
         for x in delito["alertas"]:
@@ -330,12 +336,27 @@ def page_inicio():
 
     st.markdown("### Qué hace esta versión")
     c1, c2, c3 = st.columns(3)
+
     with c1:
-        card("Consulta por hechos", "Pega una narración y el sistema sugiere temas CNPP, delitos relacionados, datos faltantes y alertas procesales.", ["CNPP", "hechos"])
+        card(
+            "Consulta por hechos",
+            "Pega una narración y el sistema sugiere temas CNPP, delitos relacionados, datos faltantes y alertas procesales.",
+            ["CNPP", "hechos"],
+        )
+
     with c2:
-        card("Fichas y etapas", "Consulta etapas del procedimiento, cadena de custodia, actos con/sin control judicial, prueba y evidencia digital.", ["proceso", "prueba"])
+        card(
+            "Fichas y etapas",
+            "Consulta etapas del procedimiento, cadena de custodia, actos con/sin control judicial, prueba y evidencia digital.",
+            ["proceso", "prueba"],
+        )
+
     with c3:
-        card("Borradores", "Genera bases editables de denuncia, solicitud de acto de investigación, preservación digital, cadena de custodia y teoría del caso.", ["formatos", "markdown"])
+        card(
+            "Borradores",
+            "Genera bases editables de denuncia, solicitud de acto de investigación, preservación digital, cadena de custodia y teoría del caso.",
+            ["formatos", "markdown"],
+        )
 
     st.markdown("### Recomendación de operación")
     st.info(
@@ -344,21 +365,34 @@ def page_inicio():
 
 
 def page_consulta():
-    hero("🔎 Consulta inteligente penal", "Describe los hechos y recibe una guía inicial con referencias del CNPP, posibles delitos y alertas de evidencia.")
+    hero(
+        "🔎 Consulta inteligente penal",
+        "Describe los hechos y recibe una guía inicial con referencias del CNPP, posibles delitos y alertas de evidencia.",
+    )
     render_warning_panel()
 
     ejemplo = """Ejemplo: La víctima recibió mensajes de WhatsApp desde un número desconocido. Le exigieron depositar dinero a una cuenta bancaria y amenazaron con hacerle daño a su familia. La víctima hizo una transferencia y conserva capturas, audios y comprobantes."""
     hechos = st.text_area("Narración de hechos", height=220, placeholder=ejemplo)
+
     enfoque = st.selectbox(
         "Enfoque principal",
-        ["General", "Evidencia digital / metadatos", "CDR / telefonía", "Cadena de custodia", "Audiencia inicial", "Actos de investigación"],
+        [
+            "General",
+            "Evidencia digital / metadatos",
+            "CDR / telefonía",
+            "Cadena de custodia",
+            "Audiencia inicial",
+            "Actos de investigación",
+        ],
     )
 
     if st.button("Analizar", type="primary", use_container_width=True):
         if not hechos.strip():
             st.warning("Escribe una narración de hechos para analizar.")
             return
+
         show_action_sticker("Analizando hechos...")
+
         query = f"{hechos} {enfoque}"
         cnpp, crimes = combined_search(query)
         suggestions = detect_suggestions(query, SUGGESTION_RULES)
@@ -366,16 +400,21 @@ def page_consulta():
 
         st.markdown("## Resultado preliminar")
         c1, c2 = st.columns([1.15, .85])
+
         with c1:
             st.markdown("### Temas CNPP relacionados")
             if not cnpp:
-                st.info("No se detectaron temas CNPP con la búsqueda textual. Intenta agregar palabras como cadena de custodia, cateo, prueba, audiencia, dato de prueba, etc.")
+                st.info(
+                    "No se detectaron temas CNPP con la búsqueda textual. Intenta agregar palabras como cadena de custodia, cateo, prueba, audiencia, dato de prueba, etc."
+                )
             for entry in cnpp[:6]:
                 article_card(entry)
+
         with c2:
             st.markdown("### Posibles fichas penales")
             if not crimes:
                 st.info("No se detectó una ficha penal clara. Revisa manualmente el tipo penal aplicable.")
+
             for delito in crimes[:4]:
                 st.markdown(f"**{delito['delito']}** · {delito.get('_score')}  ")
                 st.caption(delito["tipo_base"])
@@ -395,78 +434,129 @@ def page_consulta():
             st.checkbox(item, value=False)
 
         st.markdown("### Borrador breve de análisis")
-        resumen = f"""
+        resumen = """
         Con base en la narración proporcionada, se recomienda tratar el análisis como una valoración preliminar de hechos probablemente constitutivos de delito, evitando afirmar responsabilidad penal antes de resolución jurisdiccional. Deben identificarse con precisión modo, tiempo, lugar, víctima, conducta atribuida, datos de prueba disponibles, origen lícito de la evidencia y necesidad de actos de investigación con o sin control judicial. En caso de evidencia digital, debe preservarse su integridad mediante cadena de custodia, hash, bitácora de obtención y metodología verificable.
         """
         st.write(textwrap.dedent(resumen).strip())
 
 
 def page_cnpp():
-    hero("📚 CNPP por etapas y temas", "Consulta guías rápidas del procedimiento penal y entradas fundamentales del CNPP.")
+    hero(
+        "📚 CNPP por etapas y temas",
+        "Consulta guías rápidas del procedimiento penal y entradas fundamentales del CNPP.",
+    )
     render_warning_panel()
 
-    tab1, tab2 = st.tabs(["Guías por etapa", "Buscador CNPP"])
-    with tab1:
+    submodulo = st.radio(
+        "Vista CNPP",
+        ["Guías por etapa", "Buscador CNPP"],
+        horizontal=True,
+        key="cnpp_submodulo",
+        on_change=mark_navigation_change,
+    )
+
+    if submodulo == "Guías por etapa":
         etapa = st.selectbox("Selecciona una etapa o enfoque", list(STAGE_GUIDES.keys()))
         guide = STAGE_GUIDES[etapa]
+
         st.markdown(f"### {etapa}")
         st.write(guide["objetivo"])
+
         c1, c2 = st.columns([1, 1])
+
         with c1:
             st.markdown("**Puntos clave**")
             for p in guide["puntos_clave"]:
                 st.markdown(f"- {p}")
+
         with c2:
             st.markdown("**Artículos relacionados**")
             for a in guide["articulos_relacionados"]:
                 st.markdown(f"- {a}")
+
         st.markdown("---")
         st.markdown("**Entradas relacionadas en la base local**")
         related_query = etapa + " " + " ".join(guide["articulos_relacionados"])
-        for entry in search_records(related_query, CNPP_ENTRIES, ("tema", "articulo", "etapa", "resumen", "keywords"), limit=6):
+
+        for entry in search_records(
+            related_query,
+            CNPP_ENTRIES,
+            ("tema", "articulo", "etapa", "resumen", "keywords"),
+            limit=6,
+        ):
             article_card(entry)
 
-    with tab2:
-        q = st.text_input("Buscar en entradas CNPP", placeholder="Ej. cadena de custodia, prueba ilícita, cateo, vinculación...")
+    if submodulo == "Buscador CNPP":
+        q = st.text_input(
+            "Buscar en entradas CNPP",
+            placeholder="Ej. cadena de custodia, prueba ilícita, cateo, vinculación...",
+        )
+
         if q:
-            results = search_records(q, CNPP_ENTRIES, ("tema", "articulo", "etapa", "resumen", "keywords", "uso_practico"), limit=10)
+            results = search_records(
+                q,
+                CNPP_ENTRIES,
+                ("tema", "articulo", "etapa", "resumen", "keywords", "uso_practico"),
+                limit=10,
+            )
         else:
             results = CNPP_ENTRIES[:10]
+
         for entry in results:
             article_card(entry)
 
 
 def page_delitos():
-    hero("🧩 Fichas penales", "Fichas de orientación con elementos a revisar y evidencia útil. Verifica siempre el código local aplicable.")
+    hero(
+        "🧩 Fichas penales",
+        "Fichas de orientación con elementos a revisar y evidencia útil. Verifica siempre el código local aplicable.",
+    )
     render_warning_panel()
 
-    q = st.text_input("Buscar delito o palabra clave", placeholder="fraude, robo, lesiones, extorsión, evidencia digital...")
+    q = st.text_input(
+        "Buscar delito o palabra clave",
+        placeholder="fraude, robo, lesiones, extorsión, evidencia digital...",
+    )
+
     if q:
-        cards = search_records(q, CRIME_CARDS, ("delito", "tipo_base", "keywords", "ley_referencia", "articulos"), limit=10)
+        cards = search_records(
+            q,
+            CRIME_CARDS,
+            ("delito", "tipo_base", "keywords", "ley_referencia", "articulos"),
+            limit=10,
+        )
     else:
         cards = CRIME_CARDS
 
     names = [c["delito"] for c in cards]
+
     if not names:
         st.warning("No encontré fichas con ese término.")
         return
+
     selected = st.selectbox("Selecciona ficha", names)
     delito = next(c for c in cards if c["delito"] == selected)
     crime_card(delito)
 
 
 def page_generador():
-    hero("📝 Generador de borradores", "Crea documentos base editables para investigación penal, evidencia digital y teoría del caso.")
+    hero(
+        "📝 Generador de borradores",
+        "Crea documentos base editables para investigación penal, evidencia digital y teoría del caso.",
+    )
     render_warning_panel()
 
     tipo = st.selectbox("Tipo de documento", list(TEMPLATE_BUILDERS.keys()))
+
     st.markdown("### Datos base")
     c1, c2 = st.columns(2)
+
     with c1:
         carpeta = st.text_input("Carpeta / expediente")
         victima = st.text_input("Víctima u ofendido")
         probable = st.text_input("Probable interviniente / imputado")
         lugar = st.text_input("Lugar")
+
     with c2:
         fecha_hecho = st.text_input("Fecha/hora del hecho")
         acto = st.text_input("Acto solicitado / diligencia")
@@ -477,6 +567,7 @@ def page_generador():
 
     with st.expander("Campos opcionales para cadena de custodia / evidencia digital"):
         c3, c4 = st.columns(2)
+
         with c3:
             indicio = st.text_input("Indicio")
             descripcion_indicio = st.text_input("Descripción del indicio")
@@ -484,6 +575,7 @@ def page_generador():
             serie = st.text_input("Marca/modelo/serie")
             estado = st.text_input("Estado observado")
             embalaje = st.text_input("Embalaje")
+
         with c4:
             fecha_recepcion = st.text_input("Fecha/hora de recepción")
             entrega = st.text_input("Entrega/localiza")
@@ -540,19 +632,33 @@ def page_generador():
 
     if st.button("Generar borrador", type="primary", use_container_width=True):
         show_action_sticker("Generando borrador...")
+
         q = f"{hechos} {acto} {identificador} {tipo}"
         cnpp, crimes = combined_search(q, limit=5)
         temas = cnpp[:4] + crimes[:3]
+
         draft = TEMPLATE_BUILDERS[tipo](data, temas)
+
         st.markdown("## Borrador generado")
         st.markdown(draft)
+
         filename = f"{tipo.lower().replace(' ', '_').replace('/', '_')}_{date.today().isoformat()}.md"
-        st.download_button("Descargar borrador .md", draft.encode("utf-8"), file_name=filename, mime="text/markdown")
+        st.download_button(
+            "Descargar borrador .md",
+            draft.encode("utf-8"),
+            file_name=filename,
+            mime="text/markdown",
+        )
 
 
 def page_fuentes():
-    hero("🔗 Fuentes oficiales y actualización", "Control de fuentes para mantener la app viva y evitar referencias desactualizadas.")
+    hero(
+        "🔗 Fuentes oficiales y actualización",
+        "Control de fuentes para mantener la app viva y evitar referencias desactualizadas.",
+    )
+
     st.markdown("### Fuentes incorporadas")
+
     for source in OFFICIAL_SOURCES:
         st.markdown(
             f"""
@@ -573,7 +679,10 @@ def page_fuentes():
 # 4) Subir cambios a GitHub y redeploy en Streamlit Cloud""",
         language="bash",
     )
-    st.info("Siguiente mejora recomendada: agregar un módulo de carga de PDFs oficiales y búsqueda por texto completo con embeddings o pgvector/Supabase.")
+
+    st.info(
+        "Siguiente mejora recomendada: agregar un módulo de carga de PDFs oficiales y búsqueda por texto completo con embeddings o pgvector/Supabase."
+    )
 
 
 PAGES = {
@@ -588,7 +697,12 @@ PAGES = {
 with st.sidebar:
     st.markdown("# ⚖️ Sentinel Penal IA")
     st.caption("Derecho penal México · CNPP · Evidencia digital")
-    page = st.radio("Módulo", list(PAGES.keys()), key="selected_page", on_change=mark_navigation_change)
+    page = st.radio(
+        "Módulo",
+        list(PAGES.keys()),
+        key="selected_page",
+        on_change=mark_navigation_change,
+    )
     st.markdown("---")
     st.caption("Base local inicial. Verificar siempre legislación vigente y criterios judiciales.")
 
